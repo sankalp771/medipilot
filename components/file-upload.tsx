@@ -91,7 +91,7 @@ export function FileUpload({ onFileSelect, isProcessing }: FileUploadProps) {
 
         if (file.type === "application/pdf") {
             try {
-                const pdfJS = await import("pdfjs-dist/build/pdf");
+                const pdfJS = await import("pdfjs-dist");
                 pdfJS.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfJS.version}/build/pdf.worker.min.mjs`;
 
                 const arrayBuffer = await file.arrayBuffer();
@@ -132,7 +132,7 @@ export function FileUpload({ onFileSelect, isProcessing }: FileUploadProps) {
                     const tempCtx = tempCanvas.getContext("2d");
 
                     if (tempCtx) {
-                        await page.render({ canvasContext: tempCtx, viewport }).promise;
+                        await page.render({ canvasContext: tempCtx, viewport } as any).promise;
                         // Draw stitched
                         context.drawImage(tempCanvas, 0, currentY);
                     }

@@ -37,6 +37,10 @@ export async function POST(req: NextRequest) {
             throw new Error("Empty response from Mistral");
         }
 
+        if (typeof rawContent !== "string") {
+            throw new Error("Mistral response format invalid (not a string)");
+        }
+
         // Parse JSON
         let data;
         try {
