@@ -4,7 +4,8 @@
 
 MediPilot is an intelligent health companion designed to bridge the gap between receiving a medical report and actually following the care plan. It transforms complex, static medical documents into dynamic, actionable daily schedules.
 
-![MediPilot Demo](https://placehold.co/1200x600/10b981/ffffff?text=MediPilot+Interface)
+<img width="1586" height="836" alt="image" src="https://github.com/user-attachments/assets/9f1bac6b-a969-4f09-9c00-1b9ba8cb03a8" />
+
 
 ## 🚀 The Problem
 Patients often struggle to interpret lab reports or remember complex medication schedules. **Pre-adherence failure** occurs when patients don't fully understand *what* to do or *why* they are doing it before they even get home.
