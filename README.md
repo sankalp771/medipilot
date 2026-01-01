@@ -1,36 +1,72 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🩺 MediPilot: GenAI Care Navigator
 
-## Getting Started
+**"Care doesn't stop at the prescription."**
 
-First, run the development server:
+MediPilot is an intelligent health companion designed to bridge the gap between receiving a medical report and actually following the care plan. It transforms complex, static medical documents into dynamic, actionable daily schedules.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+![MediPilot Demo](https://placehold.co/1200x600/10b981/ffffff?text=MediPilot+Interface)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 The Problem
+Patients often struggle to interpret lab reports or remember complex medication schedules. **Pre-adherence failure** occurs when patients don't fully understand *what* to do or *why* they are doing it before they even get home.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 💡 The Solution
+MediPilot uses advanced Multimodal AI to "read" your medical documents and generate a personalized health dashboard.
+1.  **Upload & Decode**: Simply take a photo of a prescription or upload a PDF lab report.
+2.  **Instant Care Plan**: The AI extracts medications, dosages, and critical findings.
+3.  **Visual Timeline**: See exactly *when* to take your meds in a clear, linear day-view.
+4.  **Adherence Simulation**: Tracks daily progress and generates "Doctor Summaries" for your next visit.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ✨ Key Features
 
-## Learn More
+### 🧠 AI Intake Engine
+- Powered by **Mistral Pixtral 12B** (Vision-Capable Model).
+- Analyses handwritten prescriptions and complex tabular lab reports.
+- Categorizes outputs into **Medications**, **Red Flags**, and **Wellness Tips**.
 
-To learn more about Next.js, take a look at the following resources:
+### 📅 Smart Care Timeline
+- Consolidates scattered instructions into a unified **Daily Schedule**.
+- Differentiates between "Before Food", "After Food", and specific times (Morning/Noon/Night).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 🛡️ Safety & Wellness
+- **Red Flag Detection**: Highlights critical values (e.g., "High BP") or extensive drug warnings.
+- **Micro-Habits**: Suggests dietary changes (e.g., "Add beetroot for BP control") based on the specific diagnosis.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 📝 Doctor Handover (Simulation)
+- **Daily Adherence Log**: Users check off meds they've taken.
+- **Auto-Summarization**: Generates a clinical note summarizing adherence and symptoms for the doctor.
 
-## Deploy on Vercel
+## 🛠️ Tech Stack
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Framework**: [Next.js](https://nextjs.org/) (App Router)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/) + "Medical Emerald" Theme
+- **AI Model**: [Mistral AI](https://mistral.ai/) (Pixtral-12b-2409)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **PDF Processing**: `pdfjs-dist`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 🏁 Getting Started
+
+1.  **Clone the repository**
+    ```bash
+    git clone https://github.com/sankalp771/medipilot.git
+    cd medipilot
+    ```
+
+2.  **Install Dependencies**
+    ```bash
+    npm install
+    ```
+
+3.  **Set up Environment**
+    Create a `.env.local` file and add your Mistral API key:
+    ```env
+    MISTRAL_API_KEY=your_api_key_here
+    ```
+
+4.  **Run the App**
+    ```bash
+    npm run dev
+    ```
+    Open [http://localhost:3000](http://localhost:3000) to view the application.
+
+## 📄 License
+This project is open-source.

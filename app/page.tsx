@@ -53,10 +53,7 @@ export default function Home() {
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-12 min-h-screen space-y-12 pb-32 relative">
-      {/* Dark Mode Toggle */}
-      <div className="absolute top-4 right-4">
-        <ModeToggle />
-      </div>
+      {/* Mode Toggle moved to Layout Header */}
 
       {/* Header */}
       <div className="text-center space-y-4">
