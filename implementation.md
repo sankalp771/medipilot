@@ -16,8 +16,10 @@
 4.  **Security & Auth**:
     *   **Clerk Authentication**: Full Sign-Up/Sign-In flow.
     *   **Protected Headers**: User profile and session management integrated.
-
-## 🏆 Project Outcome
+5.  **Data Persistence**:
+    *   **Supabase PostgreSQL**: Production-grade database connected.
+    *   **Prisma ORM**: Schema defined and synced.
+    *   **Ready for History**: Infrastructure set up to save patient reports.
 The application is fully functional. Users can:
 1.  Create an account (Secured by Clerk).
 2.  Upload a medical document.

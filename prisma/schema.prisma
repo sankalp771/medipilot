@@ -1,0 +1,23 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Report {
+  id          String   @id @default(uuid())
+  userId      String   
+  createdAt   DateTime @default(now())
+  
+  // Quick access fields
+  summary     String
+  redFlags    String[] 
+  dietaryTips String[]
+  
+  // Full raw data
+  carePlan    Json
+}
