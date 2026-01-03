@@ -41,7 +41,7 @@ MediPilot uses advanced Multimodal AI to "read" your medical documents and gener
 - **Framework**: [Next.js](https://nextjs.org/) (App Router)
 - **Styling**: [Tailwind CSS v4](https://tailwindcss.com/) + "Medical Emerald" Theme
 - **AI Model**: [Mistral AI](https://mistral.ai/) (Pixtral-12b-2409)
-- **Authentication**: [Clerk](https://clerk.com/)
+- **Authentication**: [Clerk](https://clerk.com/) (Sign Up/Log In)
 - **Database**: [Supabase](https://supabase.com/) (PostgreSQL) + [Prisma](https://www.prisma.io/)
 - **Animations**: [Framer Motion](https://www.framer.com/motion/)
 - **PDF Processing**: `pdfjs-dist`
