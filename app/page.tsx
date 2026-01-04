@@ -245,8 +245,8 @@ export default function Home() {
                 <Card className="p-4 flex items-center gap-4 border-l-4 border-l-blue-500">
                   <CalendarCheck className="w-6 h-6 text-blue-500" />
                   <div>
-                    <div className="font-medium text-slate-900">Next Follow-up</div>
-                    <div className="text-slate-600">{carePlan.followUp}</div>
+                    <div className="font-medium text-foreground">Next Follow-up</div>
+                    <div className="text-muted-foreground">{carePlan.followUp}</div>
                   </div>
                 </Card>
               </div>

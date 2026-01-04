@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
     } catch (error: any) {
         console.error("Mistral Intake Error:", error);
         return NextResponse.json(
-            { error: error.message || "Failed to process with Mistral" },
+            { error: "AI Processing Failed. The model might be overloaded or the image was unclear. Please try again." },
             { status: 500 }
         );
     }

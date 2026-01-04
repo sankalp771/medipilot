@@ -148,7 +148,7 @@ export const ChatInterface = forwardRef<ChatRef, ChatInterfaceProps>(({ plan, in
                         {/* Input */}
                         <div className="p-4 bg-white border-t border-slate-100 flex gap-2">
                             <Input
-                                className="flex-1 bg-slate-50 border border-slate-200 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                className="flex-1 bg-slate-50 border border-slate-200 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 placeholder:text-slate-400"
                                 placeholder="Ask about your request..."
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
