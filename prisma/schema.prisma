@@ -20,4 +20,16 @@ model Report {
   
   // Full raw data
   carePlan    Json
+
+  // Relations
+  messages    Message[]
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  reportId  String
+  report    Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  role      String   // 'user' | 'assistant'
+  content   String
+  createdAt DateTime @default(now())
 }

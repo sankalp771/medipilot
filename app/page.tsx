@@ -1,20 +1,58 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { FileUpload } from "@/components/file-upload";
 import { CareTimeline } from "@/components/care-timeline";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CarePlan } from "@/types";
-import { Activity, Pill, AlertTriangle, CalendarCheck, Clock, CheckCircle2 } from "lucide-react";
+import { Activity, Pill, AlertTriangle, CalendarCheck, Clock, CheckCircle2, History } from "lucide-react";
 import { motion } from "framer-motion";
-import { ChatInterface, ChatRef } from "@/components/chat-interface";
+import { ChatInterface, ChatRef, Message } from "@/components/chat-interface";
 import { ModeToggle } from "@/components/mode-toggle";
 
 export default function Home() {
   const [step, setStep] = useState<"upload" | "processing" | "plan">("upload");
   const [carePlan, setCarePlan] = useState<CarePlan | null>(null);
+  const [initialMessages, setInitialMessages] = useState<Message[]>([]);
   const chatRef = useRef<ChatRef>(null);
+
+  const searchParams = useSearchParams();
+  const reportId = searchParams.get("reportId");
+
+  useEffect(() => {
+    if (reportId) {
+      setStep("processing");
+      fetch(`/api/reports?id=${reportId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.error) {
+            alert(data.error);
+            setStep("upload");
+            return;
+          }
+          const plan: CarePlan = { ...data.carePlan, id: data.id };
+          setCarePlan(plan);
+
+          // Load messages
+          if (data.messages && Array.isArray(data.messages)) {
+            setInitialMessages(data.messages.map((m: any) => ({
+              role: m.role as "user" | "assistant",
+              content: m.content
+            })));
+          }
+
+          setStep("plan");
+        })
+        .catch(err => {
+          console.error(err);
+          setStep("upload");
+        });
+    }
+  }, [reportId]);
+
 
   const handleFileSelect = async (base64: string) => {
     setStep("processing");
@@ -93,6 +131,14 @@ export default function Home() {
       >
         {step === "upload" || step === "processing" ? (
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 dark:bg-card dark:border-border">
+            <div className="flex justify-end mb-4">
+              <Link href="/history">
+                <Button variant="outline" className="text-slate-600">
+                  <History className="w-4 h-4 mr-2" />
+                  My History
+                </Button>
+              </Link>
+            </div>
             <FileUpload
               onFileSelect={handleFileSelect}
               isProcessing={step === "processing"}
@@ -115,7 +161,18 @@ export default function Home() {
                   Simulate Day 2
                 </Button>
 
-                <Button variant="outline" onClick={() => setStep("upload")}>
+                <Link href="/history">
+                  <Button variant="outline">
+                    <History className="w-4 h-4 mr-2" />
+                    History
+                  </Button>
+                </Link>
+
+                <Button variant="outline" onClick={() => {
+                  setStep("upload");
+                  setCarePlan(null);
+                  setInitialMessages([]);
+                }}>
                   Upload New
                 </Button>
               </div>
@@ -196,7 +253,14 @@ export default function Home() {
             )}
 
             {/* Chat Agent with Ref */}
-            {carePlan && <ChatInterface ref={chatRef} plan={carePlan} />}
+            {carePlan && (
+              <ChatInterface
+                ref={chatRef}
+                plan={carePlan}
+                initialMessages={initialMessages}
+                key={carePlan.id || 'new'} // Force remount if ID changes 
+              />
+            )}
 
           </div>
         )}

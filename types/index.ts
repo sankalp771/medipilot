@@ -1,4 +1,5 @@
 export interface CarePlan {
+    id?: string; // Database ID for history
     patientName: string;
     summary: string; // concise layman summary (max 2 sentences)
     medications: Medication[];

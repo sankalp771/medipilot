@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 interface ChatInterfaceProps {
     plan: CarePlan;
+    initialMessages?: Message[];
 }
 
 export interface ChatRef {
@@ -17,16 +18,18 @@ export interface ChatRef {
     openChat: () => void;
 }
 
-interface Message {
+export interface Message {
     role: "user" | "assistant";
     content: string;
 }
 
-export const ChatInterface = forwardRef<ChatRef, ChatInterfaceProps>(({ plan }, ref) => {
+export const ChatInterface = forwardRef<ChatRef, ChatInterfaceProps>(({ plan, initialMessages = [] }, ref) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [messages, setMessages] = useState<Message[]>([
-        { role: "assistant", content: "Hi! I've analyzed your report. Any questions?" }
-    ]);
+    const [messages, setMessages] = useState<Message[]>(
+        initialMessages.length > 0
+            ? initialMessages
+            : [{ role: "assistant", content: "Hi! I've analyzed your report. Any questions?" }]
+    );
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);

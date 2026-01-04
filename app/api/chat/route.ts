@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { mistral } from "@/lib/mistral";
+import { prisma } from "@/lib/db";
 
 export async function POST(req: NextRequest) {
     try {
         const { messages, context } = await req.json();
+        const reportId = context?.id;
 
         const systemMessage = {
             role: "system",
@@ -22,13 +24,42 @@ export async function POST(req: NextRequest) {
       `
         };
 
+        // 1. Save User Message (The last one in the array)
+        if (reportId && messages.length > 0) {
+            const lastMsg = messages[messages.length - 1];
+            if (lastMsg.role === "user") {
+                try {
+                    await prisma.message.create({
+                        data: {
+                            reportId,
+                            role: "user",
+                            content: lastMsg.content
+                        }
+                    });
+                } catch (e) { console.error("Failed to save user message", e); }
+            }
+        }
+
         const chatResponse = await mistral.chat.complete({
             model: "mistral-small-latest",
             messages: [systemMessage, ...messages],
             temperature: 0.7,
         });
 
-        const reply = chatResponse.choices?.[0]?.message?.content;
+        const reply = chatResponse.choices?.[0]?.message?.content || "I'm sorry, I couldn't generate a response.";
+
+        // 2. Save Assistant Response
+        if (reportId) {
+            try {
+                await prisma.message.create({
+                    data: {
+                        reportId,
+                        role: "assistant",
+                        content: reply
+                    }
+                });
+            } catch (e) { console.error("Failed to save assistant message", e); }
+        }
 
         return NextResponse.json({ role: "assistant", content: reply });
     } catch (error: any) {
