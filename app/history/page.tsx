@@ -108,10 +108,10 @@ export default function HistoryPage() {
     return (
         <div className="max-w-4xl mx-auto px-4 py-12 min-h-screen space-y-8 pb-32">
             <div className="flex items-center gap-4 mb-8">
-                <Link href="/" className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
-                    <ArrowLeft className="w-6 h-6 text-slate-600 dark:text-slate-400" />
+                <Link href="/" className="p-2 hover:bg-accent rounded-full transition-colors">
+                    <ArrowLeft className="w-6 h-6 text-muted-foreground" />
                 </Link>
-                <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100">Medical History</h1>
+                <h1 className="text-3xl font-bold text-foreground">Medical History</h1>
             </div>
 
             {reports.length === 0 ? (
@@ -126,27 +126,20 @@ export default function HistoryPage() {
                 <div className="grid gap-4">
                     {reports.map((report) => (
                         <Link key={report.id} href={`/?reportId=${report.id}`} className="block group">
-                            <Card className="p-6 hover:shadow-md transition-all cursor-pointer border-l-4 border-l-emerald-500 flex items-center justify-between bg-white dark:bg-slate-950/50">
-                                <div>
-                                    <div className="flex items-center gap-2 text-slate-500 text-sm mb-1">
+                            <div className="rounded-xl p-6 transition-all cursor-pointer bg-card text-card-foreground border border-border shadow-sm hover:shadow-md flex items-center justify-between gap-4">
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium">
                                         <Calendar className="w-4 h-4" />
                                         {new Date(report.createdAt).toLocaleDateString("en-US", {
-                                            weekday: 'long',
+                                            weekday: 'short',
                                             year: 'numeric',
-                                            month: 'long',
+                                            month: 'short',
                                             day: 'numeric'
                                         })}
                                     </div>
-                                    <h3 className="font-semibold text-lg text-slate-900 dark:text-slate-100 group-hover:text-emerald-600 transition-colors">
+                                    <h3 className="font-semibold text-lg text-foreground leading-tight group-hover:text-emerald-600 transition-colors">
                                         {report.summary || "Medical Report Analysis"}
                                     </h3>
-                                    <div className="flex gap-2 mt-2">
-                                        {report.redFlags.slice(0, 2).map((flag, i) => (
-                                            <span key={i} className="text-xs px-2 py-1 bg-red-50 text-red-700 rounded-full border border-red-100 dark:bg-red-950/30 dark:border-red-900 dark:text-red-400">
-                                                {flag}
-                                            </span>
-                                        ))}
-                                    </div>
                                 </div>
 
                                 <div className="flex items-center gap-2">
@@ -167,10 +160,9 @@ export default function HistoryPage() {
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
-
                                     <ChevronRight className="w-5 h-5 text-slate-300 group-hover:text-emerald-600 transition-colors" />
                                 </div>
-                            </Card>
+                            </div>
                         </Link>
                     ))}
                 </div>

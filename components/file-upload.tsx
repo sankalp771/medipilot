@@ -172,7 +172,7 @@ export function FileUpload({ onFileSelect, isProcessing }: FileUploadProps) {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         className={cn(
-                            "relative group w-full h-64 flex flex-col items-center justify-center border-2 border-dashed rounded-xl transition-all duration-200 ease-in-out cursor-pointer overflow-hidden border-muted-foreground/25 bg-card hover:border-primary/50 hover:bg-muted/30 dark:hover:bg-slate-800/50",
+                            "relative group w-full h-64 flex flex-col items-center justify-center border-2 border-dashed rounded-xl transition-all duration-200 ease-in-out cursor-pointer overflow-hidden border-muted-foreground/25 bg-background hover:bg-accent/50 hover:border-primary/50",
                             dragActive
                                 ? "border-primary bg-primary/5 scale-[1.02]"
                                 : ""
@@ -192,7 +192,7 @@ export function FileUpload({ onFileSelect, isProcessing }: FileUploadProps) {
                         />
 
                         <div className="flex flex-col items-center space-y-4 text-center p-6 z-10 transition-transform duration-200 group-hover:-translate-y-1">
-                            <div className="p-4 rounded-full bg-primary/10 text-primary mb-2 group-hover:scale-110 transition-transform dark:bg-primary/20">
+                            <div className="p-4 rounded-full bg-primary/10 text-primary mb-2 group-hover:scale-110 transition-transform">
                                 <Upload className="w-8 h-8" />
                             </div>
                             <div className="space-y-1">
@@ -204,9 +204,6 @@ export function FileUpload({ onFileSelect, isProcessing }: FileUploadProps) {
                                 </p>
                             </div>
                         </div>
-
-                        {/* Ambient Background Glow */}
-                        <div className="absolute inset-0 bg-gradient-to-tr from-primary/0 via-primary/0 to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                     </motion.div>
                 ) : (
                     <motion.div
