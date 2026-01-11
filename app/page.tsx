@@ -8,12 +8,15 @@ import { CareTimeline } from "@/components/care-timeline";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CarePlan } from "@/types";
-import { Activity, Pill, AlertTriangle, CalendarCheck, Clock, CheckCircle2, History } from "lucide-react";
+import { Activity, Pill, AlertTriangle, CalendarCheck, CheckCircle2, History } from "lucide-react";
 import { motion } from "framer-motion";
 import { ChatInterface, ChatRef, Message } from "@/components/chat-interface";
 import { ModeToggle } from "@/components/mode-toggle";
 
-export default function Home() {
+// ... imports
+import { Suspense } from "react";
+
+function HomeContent() {
   const [step, setStep] = useState<"upload" | "processing" | "plan">("upload");
   const [carePlan, setCarePlan] = useState<CarePlan | null>(null);
   const [initialMessages, setInitialMessages] = useState<Message[]>([]);
@@ -75,17 +78,6 @@ export default function Home() {
       console.error(e);
       alert(e.message || "Something went wrong with the AI extraction.");
       setStep("upload");
-    }
-  };
-
-  const handleSimulateFollowUp = () => {
-    if (chatRef.current) {
-      chatRef.current.openChat();
-      setTimeout(() => {
-        chatRef.current?.addMessage(
-          "🚨 **Adherence Alert**: Hi! I noticed you haven't checked off your medications for Day 2 morning. Did you take them? Missed doses can affect your BP reading."
-        );
-      }, 500);
     }
   };
 
@@ -152,15 +144,6 @@ export default function Home() {
                 Your Care Plan
               </h2>
               <div className="flex gap-2">
-                {/* SIMULATION BUTTON */}
-                <Button
-                  onClick={handleSimulateFollowUp}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white"
-                >
-                  <Clock className="w-4 h-4 mr-2" />
-                  Simulate Day 2
-                </Button>
-
                 <Link href="/history">
                   <Button variant="outline">
                     <History className="w-4 h-4 mr-2" />
@@ -266,5 +249,13 @@ export default function Home() {
         )}
       </motion.div>
     </main>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HomeContent />
+    </Suspense>
   );
 }

@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { userId } = await auth();
         if (!userId) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const reportId = params.id;
+        const reportId = (await params).id;
 
         // Verify ownership before deleting
         const report = await prisma.report.findUnique({
@@ -37,14 +37,14 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     }
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { userId } = await auth();
         if (!userId) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const reportId = params.id;
+        const reportId = (await params).id;
         const { summary } = await req.json();
 
         // Verify ownership

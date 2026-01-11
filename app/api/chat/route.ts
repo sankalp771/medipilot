@@ -46,7 +46,8 @@ export async function POST(req: NextRequest) {
             temperature: 0.7,
         });
 
-        const reply = chatResponse.choices?.[0]?.message?.content || "I'm sorry, I couldn't generate a response.";
+        const content = chatResponse.choices?.[0]?.message?.content;
+        const reply = typeof content === 'string' ? content : "I'm sorry, I couldn't generate a response.";
 
         // 2. Save Assistant Response
         if (reportId) {
