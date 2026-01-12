@@ -9,8 +9,9 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ChatInterfaceProps {
-    plan: CarePlan;
+    plan?: CarePlan | null; // Made optional
     initialMessages?: Message[];
+    mode?: "floating" | "embedded";
 }
 
 export interface ChatRef {
@@ -23,13 +24,19 @@ export interface Message {
     content: string;
 }
 
-export const ChatInterface = forwardRef<ChatRef, ChatInterfaceProps>(({ plan, initialMessages = [] }, ref) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [messages, setMessages] = useState<Message[]>(
-        initialMessages.length > 0
-            ? initialMessages
-            : [{ role: "assistant", content: "Hi! I've analyzed your report. Any questions?" }]
-    );
+export const ChatInterface = forwardRef<ChatRef, ChatInterfaceProps>(({ plan, initialMessages = [], mode = "floating" }, ref) => {
+    const [isOpen, setIsOpen] = useState(mode === "embedded"); // Always open if embedded
+    const [messages, setMessages] = useState<Message[]>([]);
+
+    useEffect(() => {
+        if (initialMessages.length > 0) {
+            setMessages(initialMessages);
+        } else if (mode === "floating" && messages.length === 0) {
+            // Only add default greeting if completely empty and in floating mode
+            setMessages([{ role: "assistant", content: "Hi! I'm MediPilot. Upload a report to get started, or ask me anything about your health." }]);
+        }
+    }, [initialMessages, mode]);
+
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -37,7 +44,7 @@ export const ChatInterface = forwardRef<ChatRef, ChatInterfaceProps>(({ plan, in
     useImperativeHandle(ref, () => ({
         addMessage: (msg: string) => {
             setMessages((prev) => [...prev, { role: "assistant", content: msg }]);
-            setIsOpen(true);
+            if (mode === "floating") setIsOpen(true);
         },
         openChat: () => setIsOpen(true)
     }));
@@ -46,7 +53,7 @@ export const ChatInterface = forwardRef<ChatRef, ChatInterfaceProps>(({ plan, in
         if (scrollRef.current) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
-    }, [messages, isOpen]);
+    }, [messages, isOpen, loading]);
 
     const sendMessage = async () => {
         if (!input.trim()) return;
@@ -62,7 +69,7 @@ export const ChatInterface = forwardRef<ChatRef, ChatInterfaceProps>(({ plan, in
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     messages: [...messages, newMsg].map(m => ({ role: m.role, content: m.content })),
-                    context: plan
+                    context: plan || {}
                 }),
             });
 
@@ -76,6 +83,95 @@ export const ChatInterface = forwardRef<ChatRef, ChatInterfaceProps>(({ plan, in
             setLoading(false);
         }
     };
+
+    // --- RENDER LOGIC ---
+
+    const ChatContent = (
+        <div className={cn("flex flex-col h-full bg-background", mode === "embedded" ? "w-full rounded-xl border border-border shadow-sm overflow-hidden" : "")}>
+            {/* Header - Only show if floating (embedded usually has page header) OR if we want a chat header */}
+            {mode === "floating" && (
+                <div className="p-4 bg-emerald-600 text-white flex justify-between items-center shrink-0">
+                    <div className="flex items-center gap-2">
+                        <Bot className="w-5 h-5" />
+                        <h3 className="font-semibold">MediPilot Chat</h3>
+                    </div>
+                    <button onClick={() => setIsOpen(false)} className="hover:bg-emerald-700 rounded p-1">
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+            )}
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-6 bg-muted/30" ref={scrollRef}>
+                {messages.map((m, i) => (
+                    <div
+                        key={i}
+                        className={cn(
+                            "flex w-full animate-in fade-in slide-in-from-bottom-2 duration-300",
+                            m.role === "user" ? "justify-end" : "justify-start"
+                        )}
+                    >
+                        <div className={cn("flex max-w-[85%] md:max-w-[75%] gap-3", m.role === "user" ? "flex-row-reverse" : "flex-row")}>
+                            {/* Avatar */}
+                            <div className={cn(
+                                "w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-1",
+                                m.role === "user" ? "bg-emerald-100 text-emerald-700" : "bg-blue-100 text-blue-700"
+                            )}>
+                                {m.role === "user" ? <div className="text-xs font-bold">You</div> : <Bot className="w-5 h-5" />}
+                            </div>
+
+                            {/* Bubble */}
+                            <div
+                                className={cn(
+                                    "p-4 text-sm leading-relaxed shadow-sm",
+                                    m.role === "user"
+                                        ? "bg-emerald-600 text-white rounded-2xl rounded-tr-sm"
+                                        : "bg-card border border-border text-foreground rounded-2xl rounded-tl-sm"
+                                )}
+                            >
+                                {m.content}
+                            </div>
+                        </div>
+                    </div>
+                ))}
+
+                {loading && (
+                    <div className="flex justify-start animate-in fade-in">
+                        <div className="flex max-w-[85%] gap-3">
+                            <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 mt-1">
+                                <Bot className="w-5 h-5" />
+                            </div>
+                            <div className="bg-card border border-border p-4 rounded-2xl rounded-tl-sm shadow-sm">
+                                <div className="flex gap-1.5 items-center h-full">
+                                    <span className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce" />
+                                    <span className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce delay-100" />
+                                    <span className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce delay-200" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* Input */}
+            <div className="p-4 bg-card border-t border-border flex gap-3 shrink-0">
+                <Input
+                    className="flex-1 bg-muted/50 border-input rounded-full px-5 py-6 text-base focus-visible:ring-emerald-500 placeholder:text-muted-foreground shadow-sm"
+                    placeholder={plan ? "Ask follow-up questions..." : "Ask about symptoms, or say 'Hello'..."}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+                />
+                <Button size="icon" onClick={() => sendMessage()} className="rounded-full h-12 w-12 bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shrink-0">
+                    <Send className="w-5 h-5" />
+                </Button>
+            </div>
+        </div>
+    );
+
+    if (mode === "embedded") {
+        return ChatContent;
+    }
 
     return (
         <>
@@ -97,67 +193,9 @@ export const ChatInterface = forwardRef<ChatRef, ChatInterfaceProps>(({ plan, in
                         initial={{ opacity: 0, y: 20, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                        className="fixed bottom-24 right-6 w-80 md:w-96 h-[500px] bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 flex flex-col overflow-hidden"
+                        className="fixed bottom-24 right-6 w-80 md:w-96 h-[500px] z-50 shadow-2xl rounded-2xl overflow-hidden"
                     >
-                        {/* Header */}
-                        <div className="p-4 bg-emerald-600 text-white flex justify-between items-center">
-                            <div className="flex items-center gap-2">
-                                <Bot className="w-5 h-5" />
-                                <h3 className="font-semibold">MediPilot Chat</h3>
-                            </div>
-                            <button onClick={() => setIsOpen(false)} className="hover:bg-emerald-700 rounded p-1">
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        {/* Messages */}
-                        <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50" ref={scrollRef}>
-                            {messages.map((m, i) => (
-                                <div
-                                    key={i}
-                                    className={cn(
-                                        "flex w-full",
-                                        m.role === "user" ? "justify-end" : "justify-start"
-                                    )}
-                                >
-                                    <div
-                                        className={cn(
-                                            "max-w-[80%] p-3 rounded-2xl text-sm",
-                                            m.role === "user"
-                                                ? "bg-emerald-600 text-white rounded-tr-sm"
-                                                : "bg-white border border-slate-200 text-slate-800 rounded-tl-sm shadow-sm"
-                                        )}
-                                    >
-                                        {m.content}
-                                    </div>
-                                </div>
-                            ))}
-                            {loading && (
-                                <div className="flex justify-start">
-                                    <div className="bg-white border border-slate-200 p-3 rounded-2xl rounded-tl-sm shadow-sm">
-                                        <div className="flex gap-1">
-                                            <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" />
-                                            <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-100" />
-                                            <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-200" />
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Input */}
-                        <div className="p-4 bg-white border-t border-slate-100 flex gap-2">
-                            <Input
-                                className="flex-1 bg-slate-50 border border-slate-200 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 text-slate-900 placeholder:text-slate-400"
-                                placeholder="Ask about your request..."
-                                value={input}
-                                onChange={(e) => setInput(e.target.value)}
-                                onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-                            />
-                            <Button size="icon" onClick={() => sendMessage()} className="rounded-full h-10 w-10 bg-emerald-600 hover:bg-emerald-700">
-                                <Send className="w-4 h-4" />
-                            </Button>
-                        </div>
+                        {ChatContent}
                     </motion.div>
                 )}
             </AnimatePresence>

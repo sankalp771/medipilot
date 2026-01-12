@@ -1,11 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { mistral } from "@/lib/mistral";
 import { prisma } from "@/lib/db";
+import { auth } from "@clerk/nextjs/server";
 
 export async function POST(req: NextRequest) {
     try {
         const { messages, context } = await req.json();
         const reportId = context?.id;
+        const { userId } = await auth();
+
+        // Fetch User's Persistent Medical Profile
+        let patientProfileText = "No previous medical history available.";
+        if (userId) {
+            const profile = await prisma.patientProfile.findUnique({
+                where: { userId }
+            });
+            if (profile) {
+                patientProfileText = `
+                - Known Conditions: ${profile.conditions.join(", ") || "None"}
+                - Medications: ${profile.medications.join(", ") || "None"}
+                - Allergies: ${profile.allergies.join(", ") || "None"}
+                - Notes: ${profile.additionalNotes || "None"}
+                `;
+            }
+        }
 
         const systemMessage = {
             role: "system",
@@ -14,13 +32,15 @@ export async function POST(req: NextRequest) {
       CONTEXT (Patient's Uploaded Report):
       ${JSON.stringify(context, null, 2)}
 
+      PATIENT HISTORY (Persistent Memory):
+      ${patientProfileText}
+
       INSTRUCTIONS:
-      1. **Answer based ONLY on the above context.** Do not invent values not present in the JSON.
-      2. **Lab Reports**: If the user asks about their health/values, check the "redFlags" and "summary" fields. Explain what the abnormalities mean in simple terms.
-      3. **Medications**: If asked about timing, refer to the "medications" array (Morning/Afternoon/Night).
-      4. **Tones**: Be empathetic, professional, and clear.
-      5. **Missing Info**: If the user asks something not in the report (e.g. "What is my Vitamin D?" but it's not in the JSON), say "I don't see that specific test in the summary of this report."
-      6. **Safety**: Always advise consulting a doctor for official diagnosis.
+      1. **Answer based on BOTH the current report context AND the patient's history.**
+      2. **Connect the Dots**: If the current report shows a value related to a known condition in history, mention it (e.g. "Your high glucose is relevant given your history of Diabetes").
+      3. **Lab Reports**: If the user asks about their health/values, check the "redFlags" and "summary" fields. Explain what the abnormalities mean in simple terms.
+      4. **Safety**: Always advise consulting a doctor for official diagnosis.
+      5. **Missing Info**: If asked about something not in the report or history, specifically say you don't see it.
       `
         };
 
