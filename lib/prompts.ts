@@ -12,7 +12,7 @@ Output PURE JSON with this structure:
 {
   "patientName": "string or 'Unknown'",
   "docType": "Lab Report" | "Diet Chart" | "Prescription",
-  "summary": "2-sentence summary. For Lab Reports, state the actual observed findings. DO NOT hallucinate values.",
+  "summary": "State the 3-5 most critical test results found (e.g. 'Hb: 13.5, WBC: 5000'). State if they are normal/abnormal.",
   "medications": [
     // RULES FOR 'medications' ARRAY:
     // 1. IF LAB REPORT: LEAVE THIS EMPTY []. DO NOT halluncinate medicines.
@@ -34,7 +34,8 @@ Output PURE JSON with this structure:
 
 **CRITICAL INSTRUCTIONS**:
 - **TRUTH ONLY**: Extract ONLY data visible in the image. If a value is not there, DO NOT invent it.
-- **NO PLACEHOLDERS**: Do NOT use example values like "Cholesterol 240" or "Hb 10" unless they are actually in the image.
+- **NO HALLUCINATIONS**: Do NOT include "Cholesterol", "Diabetes", or "Sugar" unless the specific text exists in the image. If the report is a "CBC" (Blood Count), do NOT mention Lipids or Glucose.
+- **NO PLACEHOLDERS**: Do NOT use example values like "Cholesterol 240" or "Hb 10". 
 - **FOR LAB REPORTS**: Check Reference Ranges. Only list values as "redFlags" if they are outside the reference range printed on the report. Format: "Test Name: Value (High/Low)".
 - **TIPS**: Provide generous, helpful dietary tips relevant to the *actual* findings.
 - **FOR DIET CHARTS**: Map "Breakfast" -> Morning, "Lunch" -> Afternoon, "Dinner" -> Night.

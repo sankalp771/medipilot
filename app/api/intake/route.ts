@@ -10,26 +10,30 @@ export async function POST(req: NextRequest) {
 
     try {
         const { userId } = await auth();
-        const { image } = await req.json();
+        const { images } = await req.json();
 
-        if (!image) {
-            return NextResponse.json({ error: "No image provided" }, { status: 400 });
+        if (!images || !Array.isArray(images) || images.length === 0) {
+            return NextResponse.json({ error: "No images provided" }, { status: 400 });
         }
 
-        // Mistral Pixtral expects "data:image/jpeg;base64,..." directly in the image_url
-        // We can pass the full data URI.
+        // Construct Mistral Payload with multiple images
+        const userContent: any[] = [
+            { type: "text", text: INTAKE_PROMPT + "\n\nIMPORTANT: Return ONLY valid JSON." }
+        ];
+
+        images.forEach((img: string) => {
+            userContent.push({ type: "image_url", imageUrl: img });
+        });
 
         const chatResponse = await mistral.chat.complete({
             model: MISTRAL_MODEL,
             messages: [
                 {
                     role: "user",
-                    content: [
-                        { type: "text", text: INTAKE_PROMPT + "\n\nIMPORTANT: Return ONLY valid JSON." },
-                        { type: "image_url", imageUrl: image }
-                    ]
+                    content: userContent
                 }
             ],
+
             responseFormat: { type: "json_object" }, // Enforce JSON mode
             temperature: 0.1,
         });

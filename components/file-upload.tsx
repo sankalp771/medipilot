@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 
 interface FileUploadProps {
-    onFileSelect: (base64: string) => void;
+    onFileSelect: (images: string[]) => void;
     isProcessing: boolean;
 }
 
@@ -42,7 +42,6 @@ export function FileUpload({ onFileSelect, isProcessing }: FileUploadProps) {
         }
     };
 
-    // Quick utility to resize image to max 1024px width/height
     const resizeImage = (file: File): Promise<string> => {
         return new Promise((resolve) => {
             const reader = new FileReader();
@@ -54,7 +53,7 @@ export function FileUpload({ onFileSelect, isProcessing }: FileUploadProps) {
                     const canvas = document.createElement("canvas");
                     let width = img.width;
                     let height = img.height;
-                    const MAX_SIZE = 1000;
+                    const MAX_SIZE = 1200; // Increased slightly for better quality
 
                     if (width > height) {
                         if (width > MAX_SIZE) {
@@ -72,22 +71,19 @@ export function FileUpload({ onFileSelect, isProcessing }: FileUploadProps) {
                     canvas.height = height;
                     const ctx = canvas.getContext("2d");
                     ctx?.drawImage(img, 0, 0, width, height);
-                    // Compress to JPEG 0.7 quality
                     resolve(canvas.toDataURL("image/jpeg", 0.7));
                 };
             };
         });
     };
 
-    // New handleFile with PDF Stitching Logic (Up to 4 Pages)
     const handleFile = async (file: File) => {
-        // Accept Image OR PDF
         if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
             alert("Please upload an Image (JPG, PNG) or PDF.");
             return;
         }
 
-        let base64 = "";
+        let images: string[] = [];
 
         if (file.type === "application/pdf") {
             try {
@@ -97,63 +93,37 @@ export function FileUpload({ onFileSelect, isProcessing }: FileUploadProps) {
                 const arrayBuffer = await file.arrayBuffer();
                 const pdf = await pdfJS.getDocument({ data: arrayBuffer }).promise;
 
-                // Smart Limit: Render up to 4 pages to capture graphs/tables
+                // Capture up to 4 pages as separate images
                 const maxPages = Math.min(pdf.numPages, 4);
-                const pages = [];
-                let totalHeight = 0;
-                let maxWidth = 0;
-
-                // First pass: Load pages and calculate dimensions
-                // Use scale 1.5 for decent clarity, but not huge 4k
-                const scale = 1.5;
+                const scale = 2.0;
 
                 for (let i = 1; i <= maxPages; i++) {
                     const page = await pdf.getPage(i);
                     const viewport = page.getViewport({ scale });
-                    pages.push({ page, viewport });
-                    totalHeight += viewport.height;
-                    if (viewport.width > maxWidth) maxWidth = viewport.width;
-                }
 
-                // Create a tall canvas to stitch them
-                const canvas = document.createElement("canvas");
-                canvas.width = maxWidth;
-                canvas.height = totalHeight;
-                const context = canvas.getContext("2d");
+                    const canvas = document.createElement("canvas");
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    const ctx = canvas.getContext("2d");
 
-                if (!context) throw new Error("Canvas context failed");
-
-                // Second pass: Render to canvas
-                let currentY = 0;
-                for (const { page, viewport } of pages) {
-                    const tempCanvas = document.createElement("canvas");
-                    tempCanvas.width = viewport.width;
-                    tempCanvas.height = viewport.height;
-                    const tempCtx = tempCanvas.getContext("2d");
-
-                    if (tempCtx) {
-                        await page.render({ canvasContext: tempCtx, viewport } as any).promise;
-                        // Draw stitched
-                        context.drawImage(tempCanvas, 0, currentY);
+                    if (ctx) {
+                        await page.render({ canvasContext: ctx, viewport } as any).promise;
+                        // Compress each page individually
+                        images.push(canvas.toDataURL("image/jpeg", 0.7));
                     }
-                    currentY += viewport.height;
                 }
-
-                // Compress final long image (0.6 quality to keep payload manageable)
-                base64 = canvas.toDataURL("image/jpeg", 0.6);
-
             } catch (e) {
                 console.error("PDF Error", e);
-                alert("Failed to read PDF. Please try an image (screenshot works best!).");
+                alert("Failed to read PDF.");
                 return;
             }
         } else {
-            // Regular Image Resize
-            base64 = await resizeImage(file);
+            const base64 = await resizeImage(file);
+            images.push(base64);
         }
 
-        setPreview(base64);
-        onFileSelect(base64);
+        setPreview(images[0]); // Preview first page only
+        onFileSelect(images);
     };
 
     const clearFile = () => {
@@ -200,7 +170,7 @@ export function FileUpload({ onFileSelect, isProcessing }: FileUploadProps) {
                                     Upload Prescription or PDF
                                 </p>
                                 <p className="text-sm text-muted-foreground">
-                                    Drag & drop or Click (Supports PDF Stitched)
+                                    Drag & drop or Click (Supports Multi-Page PDF)
                                 </p>
                             </div>
                         </div>
@@ -212,7 +182,7 @@ export function FileUpload({ onFileSelect, isProcessing }: FileUploadProps) {
                         className="relative w-full overflow-hidden rounded-xl border bg-card shadow-sm dark:border-slate-800"
                     >
                         <div className="p-2">
-                            {/* Preview now scrolls if tall */}
+                            {/* Preview first page */}
                             <div className="w-full h-64 overflow-y-auto rounded-lg bg-black/5 custom-scrollbar">
                                 <img
                                     src={preview}
@@ -222,7 +192,6 @@ export function FileUpload({ onFileSelect, isProcessing }: FileUploadProps) {
                             </div>
                         </div>
 
-                        {/* Overlay controls */}
                         {!isProcessing && (
                             <button
                                 onClick={(e) => {
@@ -239,7 +208,7 @@ export function FileUpload({ onFileSelect, isProcessing }: FileUploadProps) {
                             <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex flex-col items-center justify-center z-20">
                                 <Loader2 className="w-10 h-10 text-primary animate-spin mb-4" />
                                 <p className="text-sm font-medium animate-pulse text-muted-foreground">
-                                    Analysing Pages 1-4...
+                                    Analysing Document...
                                 </p>
                             </div>
                         )}

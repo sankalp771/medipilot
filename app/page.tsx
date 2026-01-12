@@ -73,14 +73,14 @@ function HomeContent() {
     fetchReport();
   }, [reportId]);
 
-  const handleFileSelect = async (base64: string) => {
-    // ... existing logic ...
+  const handleFileSelect = async (images: string[]) => {
     setIsUploading(true);
     try {
+      // Send to intake API (supports multiple pages)
       const res = await fetch("/api/intake", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image: base64 }),
+        body: JSON.stringify({ images }),
       });
 
       if (!res.ok) {
