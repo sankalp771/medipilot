@@ -12,7 +12,7 @@ import { Activity, Pill, AlertTriangle, CalendarCheck, CheckCircle2, History } f
 import { motion } from "framer-motion";
 import { ChatInterface, ChatRef, Message } from "@/components/chat-interface";
 import { ModeToggle } from "@/components/mode-toggle";
-import { MedicalSidebar } from "@/components/medical-sidebar";
+
 
 // ... imports
 import { Suspense } from "react";
@@ -84,8 +84,7 @@ function HomeContent() {
 
   return (
     <div className="flex min-h-screen">
-      {/* Sidebar - Hidden on mobile by default using CSS classes inside component, but let's ensure layout compatibility */}
-      <MedicalSidebar className="hidden md:block w-80 flex-shrink-0" />
+      {/* Sidebar removed as per verification */}
 
       <main className="flex-1 max-w-4xl mx-auto px-4 py-12 pb-32 relative">
         {/* Mode Toggle moved to Layout Header */}
@@ -129,7 +128,13 @@ function HomeContent() {
         >
           {step === "upload" || step === "processing" ? (
             <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 dark:bg-card dark:border-border">
-              <div className="flex justify-end mb-4">
+              <div className="flex justify-end gap-2 mb-4">
+                <Link href="/profile">
+                  <Button variant="outline" className="text-slate-600">
+                    <span className="mr-2">👤</span>
+                    Medical Profile
+                  </Button>
+                </Link>
                 <Link href="/history">
                   <Button variant="outline" className="text-slate-600">
                     <History className="w-4 h-4 mr-2" />
@@ -150,6 +155,11 @@ function HomeContent() {
                   Your Care Plan
                 </h2>
                 <div className="flex gap-2">
+                  <Link href="/profile">
+                    <Button variant="outline">
+                      <span className="mr-2">👤</span> Profile
+                    </Button>
+                  </Link>
                   <Link href="/history">
                     <Button variant="outline">
                       <History className="w-4 h-4 mr-2" />
