@@ -3,6 +3,7 @@ import { mistral, MISTRAL_MODEL } from "@/lib/mistral";
 import { INTAKE_PROMPT } from "@/lib/prompts";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/db";
+import { updateMedicalMemory } from "@/lib/memory";
 
 export async function POST(req: NextRequest) {
     console.log("Intake Request Received (Mistral)");
@@ -70,6 +71,11 @@ export async function POST(req: NextRequest) {
                 });
                 reportId = report.id;
                 console.log("Report Saved to DB:", reportId);
+
+                // --- NEW: Update Persistent Medical Memory ---
+                // We do this asynchronously (fire and forget for the API response) 
+                // but since Vercel serverless might kill it, we'll await it for safety in this version.
+                await updateMedicalMemory(userId, data);
             } catch (dbError) {
                 console.error("Failed to save report to DB:", dbError);
                 // Don't fail the request, just log it.

@@ -115,9 +115,9 @@ export default function HistoryPage() {
             </div>
 
             {reports.length === 0 ? (
-                <div className="text-center py-20 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800">
-                    <FileText className="w-12 h-12 text-slate-400 mx-auto mb-4" />
-                    <p className="text-slate-600 dark:text-slate-400 font-medium">No medical reports found.</p>
+                <div className="text-center py-20 flex flex-col items-center justify-center opacity-80">
+                    <FileText className="w-12 h-12 text-muted-foreground mb-4" />
+                    <p className="text-xl font-medium text-muted-foreground">No medical reports found.</p>
                     <Link href="/" className="text-emerald-600 font-medium hover:underline mt-2 inline-block">
                         Upload your first report
                     </Link>

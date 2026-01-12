@@ -33,3 +33,17 @@ model Message {
   content   String
   createdAt DateTime @default(now())
 }
+
+model PatientProfile {
+  id              String   @id @default(uuid())
+  userId          String   @unique // One profile per user
+  conditions      String[] // e.g. ["Diabetes", "Hypertension"]
+  medications     String[] // e.g. ["Metformin 500mg", "Lisinopril 10mg"]
+  allergies       String[] // e.g. ["Penicillin", "Peanuts"]
+  bloodType       String?
+  height          String?
+  weight          String?
+  additionalNotes String?  // Free text for AI to store other nuances
+  
+  updatedAt       DateTime @updatedAt
+}
