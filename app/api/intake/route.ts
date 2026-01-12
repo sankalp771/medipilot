@@ -10,17 +10,26 @@ export async function POST(req: NextRequest) {
 
     try {
         const { userId } = await auth();
-        const { images } = await req.json();
+        const { images, text } = await req.json();
 
         if (!images || !Array.isArray(images) || images.length === 0) {
             return NextResponse.json({ error: "No images provided" }, { status: 400 });
         }
 
-        // Construct Mistral Payload with multiple images
+        // Construct Mistral Payload
         const userContent: any[] = [
             { type: "text", text: INTAKE_PROMPT + "\n\nIMPORTANT: Return ONLY valid JSON." }
         ];
 
+        // 1. Add Extracted Text (High Priority for Multi-Page PDFs)
+        if (text) {
+            userContent.push({
+                type: "text",
+                text: `\n\n--- BEGIN EXTRACTED DOCUMENT TEXT ---\n${text}\n--- END EXTRACTED TEXT ---\nUse this text as the primary source of truth for values.`
+            });
+        }
+
+        // 2. Add Images (Visual Context)
         images.forEach((img: string) => {
             userContent.push({ type: "image_url", imageUrl: img });
         });

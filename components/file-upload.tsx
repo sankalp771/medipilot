@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 
 interface FileUploadProps {
-    onFileSelect: (images: string[]) => void;
+    onFileSelect: (images: string[], text?: string) => void;
     isProcessing: boolean;
 }
 
@@ -84,6 +84,7 @@ export function FileUpload({ onFileSelect, isProcessing }: FileUploadProps) {
         }
 
         let images: string[] = [];
+        let extractedText = "";
 
         if (file.type === "application/pdf") {
             try {
@@ -93,11 +94,12 @@ export function FileUpload({ onFileSelect, isProcessing }: FileUploadProps) {
                 const arrayBuffer = await file.arrayBuffer();
                 const pdf = await pdfJS.getDocument({ data: arrayBuffer }).promise;
 
-                // Capture up to 4 pages as separate images
-                const maxPages = Math.min(pdf.numPages, 4);
+                // 1. Capture Page 1 (and maybe Page 2) as Image for Vision Context
+                // Limiting to 2 images to avoid Vercel 4.5MB limit
+                const imagePages = Math.min(pdf.numPages, 2);
                 const scale = 2.0;
 
-                for (let i = 1; i <= maxPages; i++) {
+                for (let i = 1; i <= imagePages; i++) {
                     const page = await pdf.getPage(i);
                     const viewport = page.getViewport({ scale });
 
@@ -108,10 +110,21 @@ export function FileUpload({ onFileSelect, isProcessing }: FileUploadProps) {
 
                     if (ctx) {
                         await page.render({ canvasContext: ctx, viewport } as any).promise;
-                        // Compress each page individually
-                        images.push(canvas.toDataURL("image/jpeg", 0.7));
+                        images.push(canvas.toDataURL("image/jpeg", 0.6));
                     }
                 }
+
+                // 2. Extract Text from ALL pages (up to 10)
+                const textPages = Math.min(pdf.numPages, 10);
+                for (let i = 1; i <= textPages; i++) {
+                    const page = await pdf.getPage(i);
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map((item: any) => item.str).join(" ");
+                    extractedText += `\n--- PAGE ${i} ---\n${pageText}`;
+                }
+
+                console.log("Extracted Text Length:", extractedText.length);
+
             } catch (e) {
                 console.error("PDF Error", e);
                 alert("Failed to read PDF.");
@@ -122,8 +135,8 @@ export function FileUpload({ onFileSelect, isProcessing }: FileUploadProps) {
             images.push(base64);
         }
 
-        setPreview(images[0]); // Preview first page only
-        onFileSelect(images);
+        setPreview(images[0]); // Preview first page
+        onFileSelect(images, extractedText);
     };
 
     const clearFile = () => {
