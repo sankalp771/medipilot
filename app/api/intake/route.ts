@@ -85,6 +85,26 @@ export async function POST(req: NextRequest) {
                 reportId = report.id;
                 console.log("Report Saved to DB:", reportId);
 
+                // --- NEW: Save Health Metrics (Trends) ---
+                if (data.metrics && Array.isArray(data.metrics)) {
+                    const validMetrics = data.metrics.filter((m: any) => typeof m.value === 'number');
+                    if (validMetrics.length > 0) {
+                        await prisma.healthMetric.createMany({
+                            data: validMetrics.map((m: any) => ({
+                                userId: userId,
+                                reportId: report.id,
+                                name: m.name,
+                                canonicalName: m.canonicalName || m.name.toLowerCase().replace(/ /g, "_"), // Fallback normalization
+                                value: m.value,
+                                unit: m.unit || "",
+                                unitNormalized: m.unitNormalized || null,
+                                status: m.status,
+                                measuredAt: new Date()
+                            }))
+                        });
+                    }
+                }
+
                 // --- NEW: Update Persistent Medical Memory ---
                 // We do this asynchronously (fire and forget for the API response) 
                 // but since Vercel serverless might kill it, we'll await it for safety in this version.

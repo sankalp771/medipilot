@@ -23,6 +23,7 @@ model Report {
 
   // Relations
   messages    Message[]
+  metrics     HealthMetric[]
 }
 
 model Message {
@@ -46,4 +47,23 @@ model PatientProfile {
   additionalNotes String?  // Free text for AI to store other nuances
   
   updatedAt       DateTime @updatedAt
+}
+
+model HealthMetric {
+  id          String   @id @default(uuid())
+  userId      String
+  reportId    String?
+  report      Report?  @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  
+  name        String   // Display name from report (e.g. "HbA1c", "Glycated Hb")
+  canonicalName String // STANDARDIZED Key (e.g. "hba1c", "hemoglobin")
+  
+  value       Float    
+  unit        String   // original unit
+  unitNormalized String? // e.g. "g/dL" (Standardized)
+  
+  status      String?  
+  
+  measuredAt  DateTime 
+  createdAt   DateTime @default(now())
 }

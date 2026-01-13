@@ -13,6 +13,18 @@ Output PURE JSON with this structure:
   "patientName": "string or 'Unknown'",
   "docType": "Lab Report" | "Diet Chart" | "Prescription",
   "summary": "State the 3-5 most critical test results found (e.g. 'Hb: 13.5, WBC: 5000'). State if they are normal/abnormal.",
+  "metrics": [
+    // EXTRACT NUMERIC VITAL SIGNS OR LAB VALUES for Trend Analysis
+    // e.g. Hemoglobin, Glucose, Cholesterol, BP (systolic/diastolic split)
+    {
+      "name": "string (Original extracted Text e.g. 'Glycated Hb')",
+      "canonicalName": "string (STANDARIZED lower_snake_case key e.g. 'hba1c', 'hemoglobin', 'total_cholesterol')",
+      "value": 0, // MUST BE A NUMBER. If '12.5 g/dl', value=12.5
+      "unit": "string (Original unit)",
+      "unitNormalized": "string (Standardized unit e.g. 'g/dL')",
+      "status": "High" | "Low" | "Normal"
+    }
+  ],
   "medications": [
     // RULES FOR 'medications' ARRAY:
     // 1. IF LAB REPORT: LEAVE THIS EMPTY []. DO NOT halluncinate medicines.

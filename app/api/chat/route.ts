@@ -11,6 +11,8 @@ export async function POST(req: NextRequest) {
 
         // Fetch User's Persistent Medical Profile
         let patientProfileText = "No previous medical history available.";
+        let trendsText = "No recent trends available.";
+
         if (userId) {
             const profile = await prisma.patientProfile.findUnique({
                 where: { userId }
@@ -22,6 +24,19 @@ export async function POST(req: NextRequest) {
                 - Allergies: ${profile.allergies.join(", ") || "None"}
                 - Notes: ${profile.additionalNotes || "None"}
                 `;
+            }
+
+            // Fetch Recent Metrics (Last 20)
+            const metrics = await prisma.healthMetric.findMany({
+                where: { userId },
+                orderBy: { measuredAt: 'desc' },
+                take: 20
+            });
+
+            if (metrics.length > 0) {
+                trendsText = metrics.map(m =>
+                    `- ${m.name}: ${m.value} ${m.unit} (${m.measuredAt.toISOString().split('T')[0]})`
+                ).join("\n");
             }
         }
 
@@ -35,12 +50,15 @@ export async function POST(req: NextRequest) {
       PATIENT HISTORY (Persistent Memory):
       ${patientProfileText}
 
+      RECENT TRENDS (Last 20 Vitals/Labs):
+      ${trendsText}
+
       INSTRUCTIONS:
       1. **Answer based on BOTH the current report context AND the patient's history.**
-      2. **Connect the Dots**: If the current report shows a value related to a known condition in history, mention it (e.g. "Your high glucose is relevant given your history of Diabetes").
-      3. **Lab Reports**: If the user asks about their health/values, check the "redFlags" and "summary" fields. Explain what the abnormalities mean in simple terms.
-      4. **Safety**: Always advise consulting a doctor for official diagnosis.
-      5. **Missing Info**: If asked about something not in the report or history, specifically say you don't see it.
+      2. **Connect the Dots**: If the current report shows a value related to a known condition in history, mention it.
+      3. **Analyze Trends**: Compare current values with the 'RECENT TRENDS' list. explicitly mention if a value has improved or worsened (e.g. "Your Hemoglobin has risen from 12.0 to 13.5 since last month").
+      4. **Lab Reports**: If the user asks about their health/values, check the "redFlags" and "summary" fields. Explain what the abnormalities mean in simple terms.
+      5. **Safety**: Always advise consulting a doctor for official diagnosis.
       `
         };
 
