@@ -24,6 +24,12 @@ MediPilot uses advanced Multimodal AI to "read" your medical documents and gener
 - Analyses handwritten prescriptions and complex tabular lab reports.
 - Categorizes outputs into **Medications**, **Red Flags**, and **Wellness Tips**.
 
+### 🩺 Always-On Health Companion
+- **Global Chat**: Chat about your overall health history without needing to select a specific report.
+- **Trend Analysis**: Automatically extracts and tracks specific health metrics (e.g., HbA1c, Weight, BP) over time to show you the big picture.
+- **Living Medical Profile**: Auto-builds a persistent profile of your Conditions, Allergies, and Medications that the AI uses for context in every conversation.
+- **Seamless History**: All chats, whether report-specific or global, are saved and organized for easy access.
+
 ### 📅 Smart Care Timeline
 - Consolidates scattered instructions into a unified **Daily Schedule**.
 - Differentiates between "Before Food", "After Food", and specific times (Morning/Noon/Night).
