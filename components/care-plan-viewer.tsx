@@ -23,6 +23,37 @@ export function CarePlanViewer({ plan }: { plan: CarePlan }) {
                 </p>
             </Card>
 
+            {/* Clinical Vitals (Extracted Metrics) */}
+            {plan.metrics && plan.metrics.length > 0 && (
+                <Card className="p-5 border bg-card shadow-sm">
+                    <h3 className="flex items-center space-x-2 font-bold text-base mb-4">
+                        <Activity className="w-4 h-4 text-blue-600" />
+                        <span className="text-foreground">Clinical Vitals</span>
+                    </h3>
+                    <div className="grid grid-cols-2 gap-3">
+                        {plan.metrics.map((metric, i) => {
+                            const isAbnormal = metric.status === "High" || metric.status === "Low";
+                            return (
+                                <div key={i} className={`p-3 rounded-lg border flex flex-col ${isAbnormal ? "bg-red-50/50 border-red-200 dark:bg-red-900/10 dark:border-red-900/50" : "bg-muted/30 border-muted"}`}>
+                                    <span className="text-xs font-medium text-muted-foreground truncate" title={metric.name}>{metric.name}</span>
+                                    <div className="flex items-baseline gap-1 mt-1">
+                                        <span className={`text-lg font-bold ${isAbnormal ? "text-red-600 dark:text-red-400" : "text-foreground"}`}>
+                                            {metric.value}
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">{metric.unit}</span>
+                                    </div>
+                                    {metric.status && (
+                                        <span className={`text-[10px] uppercase font-bold mt-1 ${isAbnormal ? "text-red-500" : "text-emerald-600"}`}>
+                                            {metric.status}
+                                        </span>
+                                    )}
+                                </div>
+                            )
+                        })}
+                    </div>
+                </Card>
+            )}
+
             {/* Red Flags */}
             {plan.redFlags && plan.redFlags.length > 0 && (
                 <Card className="p-5 border bg-card shadow-sm">

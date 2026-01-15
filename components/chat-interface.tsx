@@ -69,7 +69,8 @@ export const ChatInterface = forwardRef<ChatRef, ChatInterfaceProps>(({ plan, in
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     messages: [...messages, newMsg].map(m => ({ role: m.role, content: m.content })),
-                    context: plan || {}
+                    context: plan || {},
+                    reportId: plan?.id // Explicitly send ID for saving
                 }),
             });
 

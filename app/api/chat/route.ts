@@ -26,17 +26,15 @@ export async function POST(req: NextRequest) {
                 `;
             }
 
-            // Fetch Recent Metrics (Last 20)
+            // Fetch Recent Metrics (Last 50 to find pairs)
             const metrics = await prisma.healthMetric.findMany({
                 where: { userId },
                 orderBy: { measuredAt: 'desc' },
-                take: 20
+                take: 50
             });
 
             if (metrics.length > 0) {
-                trendsText = metrics.map(m =>
-                    `- ${m.name}: ${m.value} ${m.unit} (${m.measuredAt.toISOString().split('T')[0]})`
-                ).join("\n");
+                trendsText = analyzeTrends(metrics);
             }
         }
 
@@ -50,14 +48,14 @@ export async function POST(req: NextRequest) {
       PATIENT HISTORY (Persistent Memory):
       ${patientProfileText}
 
-      RECENT TRENDS (Last 20 Vitals/Labs):
+      TREND ANALYSIS (Computed Data):
       ${trendsText}
 
       INSTRUCTIONS:
       1. **Answer based on BOTH the current report context AND the patient's history.**
-      2. **Connect the Dots**: If the current report shows a value related to a known condition in history, mention it.
-      3. **Analyze Trends**: Compare current values with the 'RECENT TRENDS' list. explicitly mention if a value has improved or worsened (e.g. "Your Hemoglobin has risen from 12.0 to 13.5 since last month").
-      4. **Lab Reports**: If the user asks about their health/values, check the "redFlags" and "summary" fields. Explain what the abnormalities mean in simple terms.
+      2. **Access to History**: You HAVE access to the user's past medical reports and trends (provided in 'TREND ANALYSIS' and 'PATIENT HISTORY' above). If the user asks if you can see past data, say YES. NEVER claim you cannot access previous reports.
+      3. **Connect the Dots**: If the current report shows a value related to a known condition in history, mention it.
+      4. **Use Trend Analysis**: Use the pre-computed 'TREND ANALYSIS' section. It contains safe, unit-checked comparisons. Quote them if relevant (e.g. "Values rose by 10%"). DO NOT calculate your own trends from raw numbers if a trend is provided here.
       5. **Safety**: Always advise consulting a doctor for official diagnosis.
       `
         };
@@ -108,4 +106,53 @@ export async function POST(req: NextRequest) {
             { status: 500 }
         );
     }
+}
+
+// ------------------------------------------------------------------
+// HELPER: Clinical Trend Analyzer
+// ------------------------------------------------------------------
+function analyzeTrends(metrics: any[]): string {
+    const groups: Record<string, any[]> = {};
+
+    // 1. Group by Canonical Name
+    metrics.forEach(m => {
+        const key = m.canonicalName || m.name.toLowerCase();
+        if (!groups[key]) groups[key] = [];
+        groups[key].push(m);
+    });
+
+    const insights: string[] = [];
+
+    // 2. Analyze each metric
+    Object.keys(groups).forEach(key => {
+        const history = groups[key].sort((a, b) => new Date(b.measuredAt).getTime() - new Date(a.measuredAt).getTime()); // Newest first
+
+        const latest = history[0];
+        const display = latest.name;
+        const unit = latest.unitNormalized || latest.unit;
+
+        if (history.length < 2) {
+            // Not enough data
+            insights.push(`- ${display}: ${latest.value} ${unit} (Baseline established, insufficient data for trend)`);
+            return;
+        }
+
+        const previous = history[1]; // Compare with immediate previous
+
+        // Data Sufficiency & Unit Check
+        if (latest.unit !== previous.unit && latest.unitNormalized !== previous.unitNormalized) {
+            insights.push(`- ${display}: Unit mismatch between recent visits (${previous.unit} vs ${latest.unit}). Cannot compare.`);
+            return;
+        }
+
+        // Calculate Direction & Magnitude
+        const delta = latest.value - previous.value;
+        const percentChange = previous.value !== 0 ? (delta / previous.value) * 100 : 0;
+        const direction = delta > 0 ? "Increased" : delta < 0 ? "Decreased" : "Stable";
+        const significance = Math.abs(percentChange) > 10 ? "Significant" : "Stable/Minor";
+
+        insights.push(`- ${display}: ${direction} from ${previous.value} to ${latest.value} ${unit} (${significance} ${Math.abs(percentChange).toFixed(1)}% change).`);
+    });
+
+    return insights.length > 0 ? insights.join("\n") : "No significant trends detected.";
 }

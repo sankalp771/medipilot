@@ -6,6 +6,16 @@ export interface CarePlan {
     redFlags: string[]; // List of 2-3 specific symptoms to watch out for
     dietaryTips: string[]; // List of 2-3 specific diet/lifestyle actionable tips (e.g. "Eat beetroot")
     followUp: string; // e.g., "7 days" or "1 month"
+    metrics?: HealthMetric[];
+}
+
+export interface HealthMetric {
+    name: string;
+    canonicalName?: string;
+    value: number;
+    unit: string;
+    unitNormalized?: string;
+    status?: "High" | "Low" | "Normal";
 }
 
 export interface Medication {
