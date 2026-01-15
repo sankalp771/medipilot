@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const reports = await prisma.report.findMany({
+        const reportList = await prisma.report.findMany({
             where: { userId },
             orderBy: { createdAt: "desc" },
             select: {
@@ -19,6 +19,24 @@ export async function GET(req: NextRequest) {
                 redFlags: true
             }
         });
+
+        // Check for Global Chat history
+        const lastGlobalMessage = await prisma.message.findFirst({
+            where: { userId, reportId: null },
+            orderBy: { createdAt: "desc" },
+            select: { createdAt: true }
+        });
+
+        const reports = [...reportList];
+
+        if (lastGlobalMessage) {
+            reports.unshift({
+                id: "global",
+                summary: "Global Health Chat",
+                createdAt: lastGlobalMessage.createdAt,
+                redFlags: [] as string[]
+            } as any);
+        }
 
         return NextResponse.json(reports);
 

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Send, Bot, X } from "lucide-react";
 import { CarePlan } from "@/types";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -27,8 +28,17 @@ export interface Message {
 }
 
 export const ChatInterface = forwardRef<ChatRef, ChatInterfaceProps>(({ plan, initialMessages = [], mode = "floating" }, ref) => {
+    const router = useRouter();
     const [isOpen, setIsOpen] = useState(mode === "embedded"); // Always open if embedded
     const [messages, setMessages] = useState<Message[]>([]);
+
+    // Track active report ID immediately to prevent race conditions during session creation
+    const activeReportId = useRef(plan?.id);
+
+    // Sync with parent prop updates
+    useEffect(() => {
+        if (plan?.id) activeReportId.current = plan.id;
+    }, [plan?.id]);
 
     useEffect(() => {
         if (initialMessages.length > 0) {
@@ -72,12 +82,22 @@ export const ChatInterface = forwardRef<ChatRef, ChatInterfaceProps>(({ plan, in
                 body: JSON.stringify({
                     messages: [...messages, newMsg].map(m => ({ role: m.role, content: m.content })),
                     context: plan || {},
-                    reportId: plan?.id // Explicitly send ID for saving
+                    reportId: activeReportId.current // Use ref for immediate consistency
                 }),
             });
 
             const data = await res.json();
             if (data.error) throw new Error(data.error);
+
+            // Handle Session Creation (URL Update)
+            if (data.reportId) {
+                // Lock onto new ID immediately
+                activeReportId.current = data.reportId;
+
+                if (!plan?.id || data.reportId !== plan.id) {
+                    router.replace(`/?reportId=${data.reportId}`, { scroll: false });
+                }
+            }
 
             setMessages((prev) => [...prev, { role: "assistant", content: data.content }]);
         } catch (e) {

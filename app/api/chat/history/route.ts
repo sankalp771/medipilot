@@ -16,18 +16,15 @@ export async function GET(req: NextRequest) {
             return NextResponse.json({ error: "Report ID required" }, { status: 400 });
         }
 
-        // Verify report ownership
-        const report = await prisma.report.findUnique({
-            where: { id: reportId },
-            select: { userId: true }
-        });
-
-        if (!report || report.userId !== userId) {
-            return NextResponse.json({ error: "Report not found or forbidden" }, { status: 404 });
-        }
+        // Determine DB filter
+        const isGlobal = reportId === "global";
+        const dbReportId = isGlobal ? null : reportId;
 
         const messages = await prisma.message.findMany({
-            where: { reportId },
+            where: {
+                userId,
+                reportId: dbReportId
+            },
             orderBy: { createdAt: 'asc' },
             select: {
                 role: true,

@@ -28,8 +28,9 @@ model Report {
 
 model Message {
   id        String   @id @default(uuid())
-  reportId  String
-  report    Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  userId    String   // LINK MESSAGE TO USER (Required for Global Chat)
+  reportId  String?  // Optional: Null = Global Chat, Value = Report Chat
+  report    Report?  @relation(fields: [reportId], references: [id], onDelete: Cascade)
   role      String   // 'user' | 'assistant'
   content   String
   createdAt DateTime @default(now())

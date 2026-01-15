@@ -73,7 +73,7 @@ export function CarePlanViewer({ plan }: { plan: CarePlan }) {
             )}
 
             {/* Medications Timeline */}
-            {plan.medications.length > 0 && (
+            {plan.medications && plan.medications.length > 0 && (
                 <div className="space-y-3">
                     <h3 className="font-semibold text-base flex items-center gap-2">
                         <Pill className="w-4 h-4 text-blue-500" />
