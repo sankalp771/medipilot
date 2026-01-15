@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
 
       INSTRUCTIONS:
       1. **Answer based on BOTH the current report context AND the patient's history.**
-      2. **Access to History**: You HAVE access to the user's past medical reports and trends (provided in 'TREND ANALYSIS' and 'PATIENT HISTORY' above). If the user asks if you can see past data, say YES. NEVER claim you cannot access previous reports.
+      2. **Access to History**: You have access to the user's historical medical data that has been explicitly provided to you in this request (labeled as TREND ANALYSIS and RECENT HISTORY). When the user asks if you can remember past reports or chats, answer YES, and clarify that you are using their stored medical history to help them.
       3. **Connect the Dots**: If the current report shows a value related to a known condition in history, mention it.
       4. **Use Trend Analysis**: Use the pre-computed 'TREND ANALYSIS' section. It contains safe, unit-checked comparisons. Quote them if relevant (e.g. "Values rose by 10%"). DO NOT calculate your own trends from raw numbers if a trend is provided here.
       5. **Safety**: Always advise consulting a doctor for official diagnosis.

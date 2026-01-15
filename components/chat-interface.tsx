@@ -7,6 +7,8 @@ import { Send, Bot, X } from "lucide-react";
 import { CarePlan } from "@/types";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface ChatInterfaceProps {
     plan?: CarePlan | null; // Made optional
@@ -124,13 +126,24 @@ export const ChatInterface = forwardRef<ChatRef, ChatInterfaceProps>(({ plan, in
                             {/* Bubble */}
                             <div
                                 className={cn(
-                                    "p-4 text-sm leading-relaxed shadow-sm",
+                                    "p-4 text-sm leading-relaxed shadow-sm overflow-hidden",
                                     m.role === "user"
                                         ? "bg-emerald-600 text-white rounded-2xl rounded-tr-sm"
                                         : "bg-card border border-border text-foreground rounded-2xl rounded-tl-sm"
                                 )}
                             >
-                                {m.content}
+                                <ReactMarkdown
+                                    remarkPlugins={[remarkGfm]}
+                                    components={{
+                                        ul: ({ ...props }) => <ul className="list-disc pl-4 space-y-1 my-2" {...props} />,
+                                        ol: ({ ...props }) => <ol className="list-decimal pl-4 space-y-1 my-2" {...props} />,
+                                        li: ({ ...props }) => <li className="pl-1" {...props} />,
+                                        strong: ({ ...props }) => <span className="font-bold text-emerald-700 dark:text-emerald-400" {...props} />,
+                                        p: ({ ...props }) => <p className="mb-2 last:mb-0" {...props} />,
+                                    }}
+                                >
+                                    {m.content}
+                                </ReactMarkdown>
                             </div>
                         </div>
                     </div>
@@ -143,10 +156,13 @@ export const ChatInterface = forwardRef<ChatRef, ChatInterfaceProps>(({ plan, in
                                 <Bot className="w-5 h-5" />
                             </div>
                             <div className="bg-card border border-border p-4 rounded-2xl rounded-tl-sm shadow-sm">
-                                <div className="flex gap-1.5 items-center h-full">
-                                    <span className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce" />
-                                    <span className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce delay-100" />
-                                    <span className="w-2 h-2 bg-muted-foreground/40 rounded-full animate-bounce delay-200" />
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex gap-1.5 items-center h-full">
+                                        <span className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" />
+                                        <span className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce delay-100" />
+                                        <span className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce delay-200" />
+                                    </div>
+                                    <span className="text-xs text-muted-foreground animate-pulse">Analyzing medical history & trends...</span>
                                 </div>
                             </div>
                         </div>
