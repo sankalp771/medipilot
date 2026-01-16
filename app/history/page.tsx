@@ -56,7 +56,12 @@ export default function HistoryPage() {
         fetch("/api/reports/all")
             .then(res => res.json())
             .then(data => {
-                setReports(data);
+                if (Array.isArray(data)) {
+                    setReports(data);
+                } else {
+                    console.error("API returned non-array:", data);
+                    setReports([]);
+                }
                 setLoading(false);
             })
             .catch(err => {

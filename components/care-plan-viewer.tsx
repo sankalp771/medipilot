@@ -36,11 +36,11 @@ export function CarePlanViewer({ plan }: { plan: CarePlan }) {
                             return (
                                 <div key={i} className={`p-3 rounded-lg border flex flex-col ${isAbnormal ? "bg-red-50/50 border-red-200 dark:bg-red-900/10 dark:border-red-900/50" : "bg-muted/30 border-muted"}`}>
                                     <span className="text-xs font-medium text-muted-foreground truncate" title={metric.name}>{metric.name}</span>
-                                    <div className="flex items-baseline gap-1 mt-1">
-                                        <span className={`text-lg font-bold ${isAbnormal ? "text-red-600 dark:text-red-400" : "text-foreground"}`}>
+                                    <div className="flex flex-col items-start mt-1">
+                                        <span className={`text-lg font-bold leading-none ${isAbnormal ? "text-red-600 dark:text-red-400" : "text-foreground"}`}>
                                             {metric.value}
                                         </span>
-                                        <span className="text-xs text-muted-foreground">{metric.unit}</span>
+                                        <span className="text-[10px] text-muted-foreground leading-tight mt-0.5 break-all">{metric.unit}</span>
                                     </div>
                                     {metric.status && (
                                         <span className={`text-[10px] uppercase font-bold mt-1 ${isAbnormal ? "text-red-500" : "text-emerald-600"}`}>

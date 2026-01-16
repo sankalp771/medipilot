@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/components/file-upload";
 import { CarePlanViewer } from "@/components/care-plan-viewer";
 import { CarePlan } from "@/types";
-import { Activity, History, ChevronLeft, Upload, FileText, PanelLeftClose, PanelLeftOpen, Plus } from "lucide-react";
+import { Activity, History, ChevronLeft, Upload, FileText, PanelLeftClose, PanelLeftOpen, Plus, Brain } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChatInterface, ChatRef, Message } from "@/components/chat-interface";
 import { ModeToggle } from "@/components/mode-toggle";
@@ -29,25 +29,30 @@ function HomeContent() {
 
   // State Split
   const [isProcessing, setIsProcessing] = useState(false); // API Processing
+  const [patientProfile, setPatientProfile] = useState<any>(null);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false); // Modal Visibility
 
   const chatRef = useRef<ChatRef>(null);
 
   // Load report if ID exists
   useEffect(() => {
-    if (!reportId) return;
-
     const fetchReport = async () => {
       setIsProcessing(true);
       try {
-        if (reportId === "global") {
+        if (!reportId || reportId === "global") {
           setCarePlan(null);
+
           // Fetch global history
           const msgRes = await fetch(`/api/chat/history?reportId=global`);
           if (msgRes.ok) {
             const msgs = await msgRes.json();
             setInitialMessages(msgs);
           }
+
+          // Fetch Profile Summary
+          fetch("/api/patient/profile").then(res => res.json()).then(data => {
+            if (!data.error) setPatientProfile(data);
+          });
         } else {
           // Fetch Specific Report
           const res = await fetch(`/api/reports/${reportId}`);
@@ -209,6 +214,30 @@ function HomeContent() {
                       <li className="hover:text-foreground transition-colors" onClick={() => chatRef.current?.addMessage("Do I have any allergies?")}>"Do I have any allergies?"</li>
                     </ul>
                   </div>
+
+                  {/* Health Snapshot */}
+                  {patientProfile && (
+                    <Link href="/profile" className="block p-4 bg-card border rounded-xl hover:border-emerald-500 transition-all shadow-sm text-left group">
+                      <div className="flex items-center gap-2 font-semibold mb-3 text-sm group-hover:text-emerald-700 dark:group-hover:text-emerald-400">
+                        <Brain className="w-4 h-4 text-purple-500" />
+                        Your Health Snapshot
+                      </div>
+                      <ul className="space-y-2 text-xs text-muted-foreground">
+                        <li className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                          <span className="font-medium text-foreground">{patientProfile.conditions?.length || 0}</span> active conditions
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                          <span className="font-medium text-foreground">{patientProfile.allergies?.length || 0}</span> allergies detected
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                          <span className="font-medium text-foreground">{patientProfile.medications?.length || 0}</span> ongoing meds
+                        </li>
+                      </ul>
+                    </Link>
+                  )}
                 </div>
               )}
             </motion.aside>
