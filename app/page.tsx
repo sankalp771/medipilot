@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/components/file-upload";
 import { CarePlanViewer } from "@/components/care-plan-viewer";
 import { CarePlan } from "@/types";
-import { Activity, History, ChevronLeft, Upload, FileText, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Activity, History, ChevronLeft, Upload, FileText, PanelLeftClose, PanelLeftOpen, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChatInterface, ChatRef, Message } from "@/components/chat-interface";
 import { ModeToggle } from "@/components/mode-toggle";
@@ -145,10 +145,10 @@ function HomeContent() {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* Upload Button */}
-          <Button size="sm" onClick={() => setIsUploadModalOpen(true)} variant="default" className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm">
-            <Upload className="w-4 h-4 mr-2" />
-            Upload Report
+          {/* Upload Button - Secondary Action */}
+          <Button size="sm" onClick={() => setIsUploadModalOpen(true)} variant="outline" className="border-dashed border-emerald-300 text-emerald-700 hover:bg-emerald-50 dark:border-emerald-800 dark:text-emerald-400 dark:hover:bg-emerald-950/30">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Report
           </Button>
 
           <Link href="/profile">
