@@ -19,6 +19,8 @@ interface ChatInterfaceProps {
 
 export interface ChatRef {
     addMessage: (msg: string) => void;
+    sendUserMessage: (msg: string) => void;
+    askQuestion: (msg: string) => void;
     openChat: () => void;
 }
 
@@ -75,20 +77,6 @@ export const ChatInterface = forwardRef<ChatRef, ChatInterfaceProps>(({ plan, in
     const scrollRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    useImperativeHandle(ref, () => ({
-        addMessage: (msg: string) => {
-            setMessages((prev) => [...prev, { role: "assistant", content: msg }]);
-            if (mode === "floating") setIsOpen(true);
-        },
-        openChat: () => setIsOpen(true)
-    }));
-
-    useEffect(() => {
-        if (scrollRef.current) {
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-        }
-    }, [messages, isOpen, loading]);
-
     const sendMessage = async (textOverride?: string) => {
         const textToSend = textOverride || input;
         if (!textToSend.trim()) return;
@@ -129,6 +117,34 @@ export const ChatInterface = forwardRef<ChatRef, ChatInterfaceProps>(({ plan, in
             setLoading(false);
         }
     };
+
+    useImperativeHandle(ref, () => ({
+        addMessage: (msg: string) => {
+            setMessages((prev) => [...prev, { role: "assistant", content: msg }]);
+            if (mode === "floating") setIsOpen(true);
+        },
+        sendUserMessage: (msg: string) => {
+            console.log("sendUserMessage called:", msg);
+            sendMessage(msg);
+            if (mode === "floating") setIsOpen(true);
+        },
+        askQuestion: (msg: string) => {
+            console.log("askQuestion executing as USER for:", msg);
+            sendMessage(msg);
+            if (mode === "floating") setIsOpen(true);
+        },
+        openChat: () => setIsOpen(true)
+    }));
+
+    useEffect(() => {
+        if (scrollRef.current) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+    }, [messages, isOpen, loading]);
+
+
+
+
 
     // --- RENDER LOGIC ---
 

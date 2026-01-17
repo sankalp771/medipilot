@@ -210,8 +210,8 @@ function HomeContent() {
                   <div className="p-4 bg-muted/30 rounded-lg text-sm text-left space-y-3">
                     <p className="font-medium text-xs text-muted-foreground uppercase">Try asking:</p>
                     <ul className="space-y-2 text-muted-foreground cursor-pointer">
-                      <li className="hover:text-foreground transition-colors" onClick={() => chatRef.current?.addMessage("How is my health trending?")}>"How is my health trending?"</li>
-                      <li className="hover:text-foreground transition-colors" onClick={() => chatRef.current?.addMessage("Do I have any allergies?")}>"Do I have any allergies?"</li>
+                      <li className="hover:text-foreground transition-colors" onClick={() => chatRef.current?.askQuestion("How is my health trending?")}>"How is my health trending? 📈"</li>
+                      <li className="hover:text-foreground transition-colors" onClick={() => chatRef.current?.askQuestion("Do I have any allergies?")}>"Do I have any allergies? 🤧"</li>
                     </ul>
                   </div>
 
