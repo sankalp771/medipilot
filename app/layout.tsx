@@ -22,11 +22,14 @@ import {
   UserButton,
 } from '@clerk/nextjs';
 
-export default function RootLayout({
+import { auth } from "@clerk/nextjs/server";
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  await auth(); // Force dynamic rendering for Auth state sync
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>

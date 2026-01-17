@@ -16,7 +16,8 @@ export async function GET(req: NextRequest) {
                 id: true,
                 summary: true,
                 createdAt: true,
-                redFlags: true
+                redFlags: true,
+                carePlan: true
             }
         });
 

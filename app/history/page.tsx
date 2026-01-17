@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
-import { Calendar, FileText, ChevronRight, ArrowLeft, MoreVertical, Trash2, Edit2, Loader2 } from "lucide-react";
+import { Calendar, FileText, ChevronRight, ArrowLeft, MoreVertical, Trash2, Edit2, Loader2, MessageCircle } from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -27,6 +27,7 @@ interface ReportSummary {
     summary: string;
     createdAt: string;
     redFlags: string[];
+    carePlan?: { isChatSession?: boolean };
 }
 
 export default function HistoryPage() {
@@ -54,7 +55,10 @@ export default function HistoryPage() {
         // Actually, user had server component before. I'll stick to client fetching for interactivity.
 
         fetch("/api/reports/all")
-            .then(res => res.json())
+            .then(res => {
+                if (!res.ok) throw new Error("API Failed");
+                return res.json();
+            })
             .then(data => {
                 if (Array.isArray(data)) {
                     setReports(data);
@@ -132,19 +136,33 @@ export default function HistoryPage() {
                     {reports.map((report) => (
                         <Link key={report.id} href={`/?reportId=${report.id}`} className="block group">
                             <div className="rounded-xl p-6 transition-all cursor-pointer bg-card text-card-foreground border border-border shadow-sm hover:shadow-md flex items-center justify-between gap-4">
-                                <div className="space-y-1">
-                                    <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium">
-                                        <Calendar className="w-4 h-4" />
-                                        {new Date(report.createdAt).toLocaleDateString("en-US", {
-                                            weekday: 'short',
-                                            year: 'numeric',
-                                            month: 'short',
-                                            day: 'numeric'
-                                        })}
-                                    </div>
-                                    <h3 className="font-semibold text-lg text-foreground leading-tight group-hover:text-emerald-600 transition-colors">
-                                        {report.summary || "Medical Report Analysis"}
-                                    </h3>
+                                <div className="flex items-start gap-4">
+                                    {/* Detect Chat vs Report */}
+                                    {(() => {
+                                        const isChat = report.id === "global" || (report.carePlan as any)?.isChatSession;
+                                        return (
+                                            <>
+                                                <div className={`p-3 rounded-full shrink-0 ${isChat ? "bg-blue-100 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400" : "bg-purple-100 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400"}`}>
+                                                    {isChat ? <MessageCircle className="w-5 h-5" /> : <FileText className="w-5 h-5" />}
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
+                                                        <span>{new Date(report.createdAt).toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                                                    </div>
+                                                    <h3 className="font-semibold text-base text-foreground group-hover:text-emerald-600 transition-colors">
+                                                        {report.summary === "Global Health Chat" ? "General Wellness" : report.summary.slice(0, 60) + (report.summary.length > 60 ? "..." : "")}
+                                                    </h3>
+                                                    <p className="text-sm text-muted-foreground line-clamp-1">
+                                                        {isChat ? "Health Chat Session" : (
+                                                            report.redFlags && report.redFlags.length > 0 ? (
+                                                                <span className="text-red-500 font-medium">Attention: {report.redFlags.slice(0, 3).join(", ")}</span>
+                                                            ) : "Medical Report Analysis"
+                                                        )}
+                                                    </p>
+                                                </div>
+                                            </>
+                                        );
+                                    })()}
                                 </div>
 
                                 <div className="flex items-center gap-2">

@@ -110,7 +110,20 @@ export const ChatInterface = forwardRef<ChatRef, ChatInterfaceProps>(({ plan, in
                 }
             }
 
-            setMessages((prev) => [...prev, { role: "assistant", content: data.content }]);
+            const aiMsg: Message = { role: "assistant", content: data.content };
+            setMessages((prev) => [...prev, aiMsg]);
+
+            // Auto-Rename: If new session or default title, trigger rename
+            if (data.reportId && (!plan || plan.summary === "New Conversation")) {
+                const fullHistory = [...messages, newMsg, aiMsg];
+                // Only rename early in the conversation
+                if (fullHistory.length >= 2 && fullHistory.length <= 6) {
+                    fetch("/api/chat/rename", {
+                        method: "POST",
+                        body: JSON.stringify({ reportId: data.reportId, messages: fullHistory })
+                    }).catch(err => console.error("Auto-rename failed", err));
+                }
+            }
         } catch (e) {
             setMessages((prev) => [...prev, { role: "assistant", content: "Sorry, I couldn't connect. Try again." }]);
         } finally {
