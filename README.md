@@ -1,5 +1,5 @@
 # 🩺 MediPilot: GenAI Care Navigator
-
+///////////////currently under maintainence , site got a lot of errors
 **"Care doesn't stop at the prescription."**
 
 MediPilot is an intelligent health companion designed to bridge the gap between receiving a medical report and actually following the care plan. It transforms complex, static medical documents into dynamic, actionable daily schedules.
